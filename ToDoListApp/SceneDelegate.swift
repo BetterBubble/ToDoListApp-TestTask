@@ -16,22 +16,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                willConnectTo session: UISceneSession,
                options connectionOptions: UIScene.ConnectionOptions) {
         
-        // Убеждаемся, что это UIWindowScene
         guard let windowScene = (scene as? UIWindowScene) else { return }
-
-        // Создаём окно вручную
+        
         let window = UIWindow(windowScene: windowScene)
-
-        // Создаём стартовый экран
-        let rootViewController = ViewController() // или любой другой контроллер
-
-        // Оборачиваем в UINavigationController, если нужно
-        let navigationController = UINavigationController(rootViewController: rootViewController)
-
-        // Назначаем rootViewController
-        window.rootViewController = navigationController
-
-        // Отображаем
+        window.rootViewController = TaskListRouter.assembleModule()
         self.window = window
         window.makeKeyAndVisible()
     }
