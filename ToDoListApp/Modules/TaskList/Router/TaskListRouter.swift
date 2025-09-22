@@ -21,16 +21,31 @@ extension TaskListRouter: TaskListRouterInput {
 
 // MARK: - Модульная сборка
 extension TaskListRouter {
-    static func assembleModule() -> UIViewController {
+    /// Собирает модуль TaskList с dependency injection
+    /// Следует принципу Dependency Inversion (D в SOLID)
+    static func assembleModule(
+        repository: TaskRepositoryProtocol? = nil,
+        dataManager: TaskDataManagerProtocol? = nil
+    ) -> UIViewController {
+        // Создаем зависимости или используем переданные
+        let coreDataStack = CoreDataStack.shared
+        let repository = repository ?? CoreDataTaskRepository(coreDataStack: coreDataStack)
+        let dataManager = dataManager ?? TaskDataManager(repository: repository)
+
+        // Создаем компоненты VIPER
         let view = TaskListViewController()
-        let interactor = TaskListInteractor()
+        let interactor = TaskListInteractor(dataManager: dataManager)
         let router = TaskListRouter()
         let presenter = TaskListPresenter(view: view, interactor: interactor, router: router)
 
+        // Связываем компоненты
         view.output = presenter
         interactor.output = presenter
         router.viewController = view
 
-        return view
+        // Инициализируем Core Data при первом запуске
+        _ = coreDataStack
+
+        return UINavigationController(rootViewController: view)
     }
 }

@@ -6,14 +6,31 @@
 //
 
 import UIKit
+import CoreData
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
+    // MARK: - Properties
 
+    /// Сервис миграции данных
+    private var dataMigrationService: DataMigrationService?
+
+    // MARK: - UIApplicationDelegate
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+
+        // ОТЛАДКА: Раскомментируйте для полного сброса данных и повторной загрузки из API
+        // CoreDataStack.deleteAllData()
+
+        // Показываем путь к базе данных
+        let storeURL = NSPersistentContainer.defaultDirectoryURL()
+            .appendingPathComponent("ToDoListModel.sqlite")
+        print("Путь к базе данных: \(storeURL.path)")
+
+        // Инициализируем сервис миграции данных
+        dataMigrationService = DataMigrationService()
+
         return true
     }
 

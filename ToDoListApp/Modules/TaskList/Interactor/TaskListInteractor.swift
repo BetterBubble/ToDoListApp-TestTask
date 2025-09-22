@@ -1,35 +1,106 @@
 
 import Foundation
 
+/// Интерактор модуля TaskList
+/// Отвечает за бизнес-логику и работу с данными
+/// Следует принципу Single Responsibility (S в SOLID)
 final class TaskListInteractor {
-    weak var output: TaskListInteractorOutput?
 
-    // Временно будем хранить задачи в памяти
-    private var tasks: [Task] = []
+    // MARK: - Properties
+
+    weak var output: TaskListInteractorOutput?
+    private let dataManager: TaskDataManagerProtocol
+
+    // MARK: - Init
+
+    init(dataManager: TaskDataManagerProtocol) {
+        self.dataManager = dataManager
+    }
 }
 
 // MARK: - TaskListInteractorInput
-extension TaskListInteractor: TaskListInteractorInput {
-    func fetchTasks() {
-        // Заглушка: возвращаем моковые задачи через 0.5 секунды
-        let workItem = DispatchWorkItem {
-            let mockTasks: [Task] = [
-                Task(id: UUID(), title: "Купить молоко", isCompleted: false),
-                Task(id: UUID(), title: "Сделать тестовое", isCompleted: true),
-                Task(id: UUID(), title: "Записаться в спортзал", isCompleted: false)
-            ]
 
-            DispatchQueue.main.async {
-                self.output?.didFetchTasks(mockTasks)
+extension TaskListInteractor: TaskListInteractorInput {
+
+    func fetchTasks() {
+        // Загружаем задачи через DataManager
+        dataManager.fetchAllTasks { [weak self] result in
+            switch result {
+            case .success(let tasks):
+                self?.output?.didFetchTasks(tasks)
+            case .failure(let error):
+                self?.output?.didFailToFetchTasks(error: error)
             }
         }
-
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5, execute: workItem)
     }
 
     func createTask(with title: String) {
-        let newTask = Task(title: title)
-        tasks.append(newTask)
-        output?.didFetchTasks(tasks)
+        // Создаем задачу через DataManager
+        dataManager.createTask(with: title, description: nil) { [weak self] result in
+            switch result {
+            case .success:
+                // После создания перезагружаем список
+                self?.fetchTasks()
+            case .failure(let error):
+                self?.output?.didFailToFetchTasks(error: error)
+            }
+        }
+    }
+
+    func deleteTask(at index: Int) {
+        // Сначала получаем все задачи, чтобы найти нужную по индексу
+        dataManager.fetchAllTasks { [weak self] result in
+            switch result {
+            case .success(let tasks):
+                guard tasks.indices.contains(index) else { return }
+                let taskToDelete = tasks[index]
+
+                self?.dataManager.deleteTask(by: taskToDelete.id) { deleteResult in
+                    switch deleteResult {
+                    case .success:
+                        // После удаления перезагружаем список
+                        self?.fetchTasks()
+                    case .failure(let error):
+                        self?.output?.didFailToFetchTasks(error: error)
+                    }
+                }
+            case .failure(let error):
+                self?.output?.didFailToFetchTasks(error: error)
+            }
+        }
+    }
+
+    func toggleTaskCompletion(at index: Int) {
+        // Получаем все задачи и переключаем статус нужной
+        dataManager.fetchAllTasks { [weak self] result in
+            switch result {
+            case .success(let tasks):
+                guard tasks.indices.contains(index) else { return }
+                let task = tasks[index]
+
+                self?.dataManager.toggleTaskCompletion(for: task.id) { toggleResult in
+                    switch toggleResult {
+                    case .success:
+                        // После обновления перезагружаем список
+                        self?.fetchTasks()
+                    case .failure(let error):
+                        self?.output?.didFailToFetchTasks(error: error)
+                    }
+                }
+            case .failure(let error):
+                self?.output?.didFailToFetchTasks(error: error)
+            }
+        }
+    }
+
+    func searchTasks(with searchText: String) {
+        dataManager.searchTasks(with: searchText) { [weak self] result in
+            switch result {
+            case .success(let tasks):
+                self?.output?.didFetchTasks(tasks)
+            case .failure(let error):
+                self?.output?.didFailToFetchTasks(error: error)
+            }
+        }
     }
 }
