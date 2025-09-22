@@ -1,0 +1,264 @@
+//
+//  CoreDataTaskRepository.swift
+//  ToDoListApp
+//
+
+import Foundation
+import CoreData
+
+/// Реализация репозитория для работы с Core Data
+/// Следует принципам SOLID: Single Responsibility и Dependency Inversion
+final class CoreDataTaskRepository: TaskRepositoryProtocol {
+
+    // MARK: - Properties
+
+    private let coreDataStack: CoreDataStackProtocol
+    private let backgroundQueue = DispatchQueue(label: "com.todolist.repository", qos: .background)
+
+    // MARK: - Init
+
+    init(coreDataStack: CoreDataStackProtocol = CoreDataStack.shared) {
+        self.coreDataStack = coreDataStack
+    }
+
+    // MARK: - TaskRepositoryProtocol
+
+    func fetchAllTasks(completion: @escaping (Result<[Task], Error>) -> Void) {
+        backgroundQueue.async { [weak self] in
+            guard let self = self else { return }
+
+            let context = self.coreDataStack.viewContext
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+
+            // Сортировка по дате создания (новые сверху)
+            request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+
+            do {
+                let entities = try context.fetch(request)
+                let tasks = entities.map { $0.toDomainModel() }
+                print("Загружено задач: \(tasks.count)")
+
+                DispatchQueue.main.async {
+                    completion(.success(tasks))
+                }
+            } catch {
+                print("Ошибка загрузки задач: \(error)")
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.fetchFailed(error)))
+                }
+            }
+        }
+    }
+
+    func fetchTask(by id: UUID, completion: @escaping (Result<Task?, Error>) -> Void) {
+        backgroundQueue.async { [weak self] in
+            guard let self = self else { return }
+
+            let context = self.coreDataStack.viewContext
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+            request.fetchLimit = 1
+
+            do {
+                let entities = try context.fetch(request)
+                let task = entities.first?.toDomainModel()
+
+                DispatchQueue.main.async {
+                    completion(.success(task))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.fetchFailed(error)))
+                }
+            }
+        }
+    }
+
+    func createTask(_ task: Task, completion: @escaping (Result<Task, Error>) -> Void) {
+        print("Создаем задачу: \(task.title)")
+
+        coreDataStack.performBackgroundTask { context in
+            guard let entityDescription = NSEntityDescription.entity(
+                forEntityName: "TaskEntity",
+                in: context
+            ) else {
+                print("Не удалось найти entity TaskEntity")
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.entityNotFound))
+                }
+                return
+            }
+
+            let taskEntity = TaskEntity(entity: entityDescription, insertInto: context)
+            taskEntity.update(from: task)
+
+            do {
+                try context.save()
+                print("Задача сохранена в Core Data: \(task.title)")
+                DispatchQueue.main.async {
+                    completion(.success(task))
+                }
+            } catch {
+                print("Ошибка сохранения задачи: \(error)")
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.saveFailed(error)))
+                }
+            }
+        }
+    }
+
+    func updateTask(_ task: Task, completion: @escaping (Result<Task, Error>) -> Void) {
+        coreDataStack.performBackgroundTask { context in
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", task.id as CVarArg)
+            request.fetchLimit = 1
+
+            do {
+                let entities = try context.fetch(request)
+                guard let taskEntity = entities.first else {
+                    DispatchQueue.main.async {
+                        completion(.failure(CoreDataError.entityNotFound))
+                    }
+                    return
+                }
+
+                taskEntity.update(from: task)
+                try context.save()
+
+                DispatchQueue.main.async {
+                    completion(.success(task))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.saveFailed(error)))
+                }
+            }
+        }
+    }
+
+    func deleteTask(by id: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
+        coreDataStack.performBackgroundTask { context in
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+
+            do {
+                let entities = try context.fetch(request)
+                entities.forEach { context.delete($0) }
+                try context.save()
+
+                DispatchQueue.main.async {
+                    completion(.success(()))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.saveFailed(error)))
+                }
+            }
+        }
+    }
+
+    func deleteAllTasks(completion: @escaping (Result<Void, Error>) -> Void) {
+        coreDataStack.performBackgroundTask { context in
+            let request: NSFetchRequest<NSFetchRequestResult> = TaskEntity.fetchRequest()
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+
+            do {
+                try context.execute(deleteRequest)
+                try context.save()
+
+                DispatchQueue.main.async {
+                    completion(.success(()))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.saveFailed(error)))
+                }
+            }
+        }
+    }
+
+    func searchTasks(with searchText: String, completion: @escaping (Result<[Task], Error>) -> Void) {
+        backgroundQueue.async { [weak self] in
+            guard let self = self else { return }
+
+            let context = self.coreDataStack.viewContext
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+
+            // Поиск по названию и описанию
+            let titlePredicate = NSPredicate(format: "title CONTAINS[cd] %@", searchText)
+            let descriptionPredicate = NSPredicate(format: "taskDescription CONTAINS[cd] %@", searchText)
+            request.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [titlePredicate, descriptionPredicate])
+
+            request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+
+            do {
+                let entities = try context.fetch(request)
+                let tasks = entities.map { $0.toDomainModel() }
+
+                DispatchQueue.main.async {
+                    completion(.success(tasks))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.fetchFailed(error)))
+                }
+            }
+        }
+    }
+
+    func getTasksCount(completion: @escaping (Result<Int, Error>) -> Void) {
+        backgroundQueue.async { [weak self] in
+            guard let self = self else { return }
+
+            let context = self.coreDataStack.viewContext
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+
+            do {
+                let count = try context.count(for: request)
+                DispatchQueue.main.async {
+                    completion(.success(count))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.fetchFailed(error)))
+                }
+            }
+        }
+    }
+
+    func saveTasksFromAPI(_ tasks: [Task], completion: @escaping (Result<Void, Error>) -> Void) {
+        print("Сохраняем \(tasks.count) задач из API")
+
+        coreDataStack.performBackgroundTask { context in
+            guard let entityDescription = NSEntityDescription.entity(
+                forEntityName: "TaskEntity",
+                in: context
+            ) else {
+                print("Не удалось найти entity TaskEntity")
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.entityNotFound))
+                }
+                return
+            }
+
+            // Сохраняем каждую задачу
+            tasks.forEach { task in
+                let taskEntity = TaskEntity(entity: entityDescription, insertInto: context)
+                taskEntity.update(from: task)
+            }
+
+            do {
+                try context.save()
+                print("Успешно сохранено \(tasks.count) задач в Core Data")
+                DispatchQueue.main.async {
+                    completion(.success(()))
+                }
+            } catch {
+                print("Ошибка сохранения задач из API: \(error)")
+                DispatchQueue.main.async {
+                    completion(.failure(CoreDataError.saveFailed(error)))
+                }
+            }
+        }
+    }
+}
