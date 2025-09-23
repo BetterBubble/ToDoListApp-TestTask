@@ -28,6 +28,7 @@ extension TaskEntity {
         return Task(
             id: id ?? UUID(),
             title: title ?? "",
+            description: taskDescription,
             isCompleted: isCompleted,
             createdAt: createdAt ?? Date()
         )
@@ -37,6 +38,7 @@ extension TaskEntity {
     func update(from task: Task) {
         self.id = task.id
         self.title = task.title
+        self.taskDescription = task.description
         self.isCompleted = task.isCompleted
         self.createdAt = task.createdAt
     }

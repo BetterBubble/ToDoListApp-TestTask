@@ -63,12 +63,18 @@ final class DataMigrationService {
 
     /// Конвертирует задачи из API формата в доменную модель и сохраняет
     private func convertAndSaveTasks(_ apiTasks: [APITask]) {
-        let domainTasks = apiTasks.map { apiTask in
-            Task(
+        let domainTasks = apiTasks.enumerated().map { index, apiTask in
+            // Создаём название в формате "Задача N"
+            let title = "Задача \(index + 1)"
+            // Полный текст из API используем как описание
+            let description = apiTask.todo
+
+            return Task(
                 id: UUID(),
-                title: apiTask.todo,
+                title: title,
+                description: description,
                 isCompleted: apiTask.completed,
-                createdAt: Date()
+                createdAt: Date() // Генерируем дату локально
             )
         }
 
@@ -90,13 +96,21 @@ final class DataMigrationService {
 
     /// Создает демо-задачи если не удалось загрузить из API
     private func createDemoTasks() {
-        let demoTasks = [
-            Task(title: "Изучить архитектуру VIPER", isCompleted: false),
-            Task(title: "Настроить Core Data", isCompleted: true),
-            Task(title: "Реализовать загрузку из API", isCompleted: false),
-            Task(title: "Написать юнит-тесты", isCompleted: false),
-            Task(title: "Добавить поиск по задачам", isCompleted: false)
+        let demoDescriptions = [
+            "Изучить архитектуру VIPER и применить в проекте",
+            "Настроить Core Data для сохранения задач",
+            "Реализовать загрузку задач из dummyjson.com",
+            "Написать тесты для основных компонентов",
+            "Добавить поиск по названию и описанию задач"
         ]
+
+        let demoTasks = demoDescriptions.enumerated().map { index, description in
+            Task(
+                title: "Задача \(index + 1)",
+                description: description,
+                isCompleted: index == 1 // Вторая задача отмечена как выполненная
+            )
+        }
 
         repository.saveTasksFromAPI(demoTasks) { result in
             switch result {

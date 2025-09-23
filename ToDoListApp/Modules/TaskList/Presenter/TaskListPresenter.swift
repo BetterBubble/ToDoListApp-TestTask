@@ -7,6 +7,7 @@ final class TaskListPresenter {
     var router: TaskListRouterInput
 
     private var tasks: [Task] = []
+    private let dateFormatter: DateFormatter
 
     init(
         view: TaskListViewInput,
@@ -16,6 +17,11 @@ final class TaskListPresenter {
         self.view = view
         self.interactor = interactor
         self.router = router
+
+        // Настройка форматтера даты
+        self.dateFormatter = DateFormatter()
+        self.dateFormatter.dateFormat = "dd/MM/yy"
+        self.dateFormatter.locale = Locale(identifier: "ru_RU")
 
         // Подписываемся на уведомление о загрузке данных из API
         setupNotificationObservers()
@@ -39,6 +45,17 @@ final class TaskListPresenter {
     @objc private func handleDataDidLoad() {
         print("Presenter: Получено уведомление о загрузке данных из API")
         interactor.fetchTasks()
+    }
+
+    // MARK: - Public Methods for View
+
+    func getFormattedDate(for task: Task) -> String {
+        return dateFormatter.string(from: task.createdAt)
+    }
+
+    func getTask(at index: Int) -> Task? {
+        guard tasks.indices.contains(index) else { return nil }
+        return tasks[index]
     }
 }
 

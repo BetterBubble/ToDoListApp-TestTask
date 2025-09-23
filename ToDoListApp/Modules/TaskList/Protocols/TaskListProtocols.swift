@@ -16,6 +16,10 @@ protocol TaskListViewOutput: AnyObject {
     func didDeleteTask(at index: Int)
     func didToggleTaskCompletion(at index: Int)
     func didChangeSearchText(_ searchText: String)
+
+    // Методы для получения данных для отображения
+    func getTask(at index: Int) -> Task?
+    func getFormattedDate(for task: Task) -> String
 }
 
 // MARK: - Presenter → Interactor

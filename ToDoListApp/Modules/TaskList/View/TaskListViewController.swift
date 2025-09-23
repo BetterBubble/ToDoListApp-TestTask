@@ -66,17 +66,18 @@ final class TaskListViewController: UIViewController {
     @objc private func addTaskTapped() {
         let alert = UIAlertController(
             title: "Новая задача",
-            message: "Введите название задачи",
+            message: "Введите описание задачи",
             preferredStyle: .alert
         )
 
         alert.addTextField { textField in
-            textField.placeholder = "Название задачи"
+            textField.placeholder = "Описание задачи"
         }
 
         let addAction = UIAlertAction(title: "Добавить", style: .default) { [weak self] _ in
-            guard let title = alert.textFields?.first?.text else { return }
-            self?.output?.didTapAddTask(with: title)
+            guard let description = alert.textFields?.first?.text else { return }
+            // Передаём описание, номер задачи сгенерируется автоматически
+            self?.output?.didTapAddTask(with: description)
         }
 
         alert.addAction(addAction)
@@ -97,11 +98,35 @@ extension TaskListViewController: UITableViewDataSource {
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let task = tasks[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath)
+
         var content = cell.defaultContentConfiguration()
+
+        // Основной текст - название задачи (например: "Задача 1")
         content.text = task.title
-        content.secondaryText = task.isCompleted ? "Выполнена" : "В процессе"
+
+        // Вторичный текст - описание и дата
+        var secondaryText = ""
+
+        // Сначала добавляем описание (если есть)
+        if let description = task.description, !description.isEmpty {
+            secondaryText = description
+        }
+
+        // Добавляем дату создания
+        let formattedDate = output?.getFormattedDate(for: task) ?? ""
+        if !secondaryText.isEmpty {
+            secondaryText += "\n"
+        }
+        secondaryText += formattedDate
+
+        content.secondaryText = secondaryText
+        content.secondaryTextProperties.numberOfLines = 3
+        content.secondaryTextProperties.color = .secondaryLabel
+
         cell.contentConfiguration = content
+        // Галочка справа показывает статус выполнения
         cell.accessoryType = task.isCompleted ? .checkmark : .none
+
         return cell
     }
 
