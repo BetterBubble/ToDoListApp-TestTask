@@ -64,26 +64,8 @@ final class TaskListViewController: UIViewController {
 
     // MARK: - Actions
     @objc private func addTaskTapped() {
-        let alert = UIAlertController(
-            title: "Новая задача",
-            message: "Введите описание задачи",
-            preferredStyle: .alert
-        )
-
-        alert.addTextField { textField in
-            textField.placeholder = "Описание задачи"
-        }
-
-        let addAction = UIAlertAction(title: "Добавить", style: .default) { [weak self] _ in
-            guard let description = alert.textFields?.first?.text else { return }
-            // Передаём описание, номер задачи сгенерируется автоматически
-            self?.output?.didTapAddTask(with: description)
-        }
-
-        alert.addAction(addAction)
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
-
-        present(alert, animated: true)
+        let taskDetailViewController = TaskDetailRouter.assembleModule(with: nil)
+        navigationController?.pushViewController(taskDetailViewController, animated: true)
     }
 }
 

@@ -43,25 +43,15 @@ final class TaskDataManager: TaskDataManagerProtocol {
             return
         }
 
-        // Получаем количество существующих задач для генерации номера
-        repository.getTasksCount { [weak self] result in
-            switch result {
-            case .success(let count):
-                let taskNumber = count + 1
-                let task = Task(
-                    id: UUID(),
-                    title: "Задача \(taskNumber)",
-                    description: title.trimmingCharacters(in: .whitespacesAndNewlines),
-                    isCompleted: false,
-                    createdAt: Date()
-                )
+        let task = Task(
+            id: UUID(),
+            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+            description: description,
+            isCompleted: false,
+            createdAt: Date()
+        )
 
-                self?.repository.createTask(task, completion: completion)
-
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
+        repository.createTask(task, completion: completion)
     }
 
     func updateTask(_ task: Task, completion: @escaping (Result<Task, Error>) -> Void) {

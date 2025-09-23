@@ -45,16 +45,16 @@ final class DataMigrationService {
 
     /// Загружает начальные данные из API
     func loadInitialDataFromAPI() {
-        print("📥 Начинаем загрузку данных из API...")
+        print("Начинаем загрузку данных из API...")
 
         apiService.fetchTasks { [weak self] result in
             switch result {
             case .success(let apiTasks):
-                print("✅ Получено \(apiTasks.count) задач из API")
+                print("Получено \(apiTasks.count) задач из API")
                 self?.convertAndSaveTasks(apiTasks)
 
             case .failure(let error):
-                print("❌ Ошибка загрузки из API: \(error.localizedDescription)")
+                print("Ошибка загрузки из API: \(error.localizedDescription)")
                 // В случае ошибки создаем демо-данные
                 self?.createDemoTasks()
             }
@@ -81,7 +81,7 @@ final class DataMigrationService {
         repository.saveTasksFromAPI(domainTasks) { result in
             switch result {
             case .success:
-                print("✅ Задачи успешно сохранены в Core Data")
+                print("Задачи успешно сохранены в Core Data")
                 // Отправляем уведомление об успешной загрузке
                 NotificationCenter.default.post(
                     name: .dataDidLoad,
@@ -89,7 +89,7 @@ final class DataMigrationService {
                 )
 
             case .failure(let error):
-                print("❌ Ошибка сохранения в Core Data: \(error.localizedDescription)")
+                print("Ошибка сохранения в Core Data: \(error.localizedDescription)")
             }
         }
     }
@@ -115,14 +115,14 @@ final class DataMigrationService {
         repository.saveTasksFromAPI(demoTasks) { result in
             switch result {
             case .success:
-                print("✅ Демо-задачи созданы")
+                print("Демо-задачи созданы")
                 NotificationCenter.default.post(
                     name: .dataDidLoad,
                     object: nil
                 )
 
             case .failure(let error):
-                print("❌ Не удалось создать демо-задачи: \(error.localizedDescription)")
+                print("Не удалось создать демо-задачи: \(error.localizedDescription)")
             }
         }
     }

@@ -7,15 +7,8 @@ final class TaskListRouter {
 
 extension TaskListRouter: TaskListRouterInput {
     func navigateToTaskDetail(with task: Task) {
-        // Здесь создаётся экран с деталями задачи (пока заглушка)
-        let alert = UIAlertController(
-            title: "Задача",
-            message: "ID: \(task.id)\nНазвание: \(task.title)",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "ОК", style: .default))
-
-        viewController?.present(alert, animated: true)
+        let taskDetailViewController = TaskDetailRouter.assembleModule(with: task)
+        viewController?.navigationController?.pushViewController(taskDetailViewController, animated: true)
     }
 }
 
