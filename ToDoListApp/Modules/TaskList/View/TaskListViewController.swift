@@ -64,8 +64,7 @@ final class TaskListViewController: UIViewController {
 
     // MARK: - Actions
     @objc private func addTaskTapped() {
-        let taskDetailViewController = TaskDetailRouter.assembleModule(with: nil)
-        navigationController?.pushViewController(taskDetailViewController, animated: true)
+        output?.didTapAddTask()
     }
 }
 
@@ -95,7 +94,7 @@ extension TaskListViewController: UITableViewDataSource {
         }
 
         // Добавляем дату создания
-        let formattedDate = output?.getFormattedDate(for: task) ?? ""
+        let formattedDate = output?.getFormattedDate(at: indexPath.row) ?? ""
         if !secondaryText.isEmpty {
             secondaryText += "\n"
         }
@@ -142,6 +141,51 @@ extension TaskListViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         output?.didSelectTask(at: indexPath.row)
     }
+
+    func tableView(_ tableView: UITableView,
+                   contextMenuConfigurationForRowAt indexPath: IndexPath,
+                   point: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: indexPath as NSIndexPath, previewProvider: nil) { [weak self] _ in
+            guard let self = self else { return nil }
+
+            let editAction = UIAction(
+                title: "Редактировать",
+                image: UIImage(systemName: "pencil")
+            ) { _ in
+                self.output?.didSelectEdit(at: indexPath.row)
+            }
+
+            let shareAction = UIAction(
+                title: "Поделиться",
+                image: UIImage(systemName: "square.and.arrow.up")
+            ) { _ in
+                self.output?.didSelectShare(at: indexPath.row)
+            }
+
+            let deleteAction = UIAction(
+                title: "Удалить",
+                image: UIImage(systemName: "trash"),
+                attributes: .destructive
+            ) { _ in
+                self.output?.didDeleteTask(at: indexPath.row)
+            }
+
+            return UIMenu(title: "", children: [editAction, shareAction, deleteAction])
+        }
+    }
+
+    func tableView(_ tableView: UITableView,
+                   previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        guard let indexPath = configuration.identifier as? NSIndexPath,
+              let cell = tableView.cellForRow(at: indexPath as IndexPath) else {
+            return nil
+        }
+
+        let parameters = UIPreviewParameters()
+        parameters.backgroundColor = .clear
+
+        return UITargetedPreview(view: cell, parameters: parameters)
+    }
 }
 
 // MARK: - TaskListViewInput
@@ -171,6 +215,7 @@ extension TaskListViewController: TaskListViewInput {
         activityIndicator.stopAnimating()
         tableView.isHidden = false
     }
+
 }
 
 // MARK: - UISearchResultsUpdating

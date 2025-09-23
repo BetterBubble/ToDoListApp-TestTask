@@ -3,24 +3,20 @@
 //  ToDoListApp
 //
 
-import UIKit
+import Foundation
 
 // MARK: - View Protocols
 
 protocol TaskDetailViewInput: AnyObject {
     func setupInitialState()
-    func displayTask(_ task: Task?)
+    func displayTask(title: String?, description: String?)
     func displayDate(_ dateString: String)
-    func showLoading()
-    func hideLoading()
     func showError(_ message: String)
-    func dismissView()
 }
 
 protocol TaskDetailViewOutput: AnyObject {
     func viewDidLoad()
     func didTapSave(title: String, description: String)
-    func didTapCancel()
 }
 
 // MARK: - Interactor Protocols
@@ -42,14 +38,4 @@ protocol TaskDetailPresenterInput: AnyObject {
     var task: Task? { get set }
 }
 
-// MARK: - Router Protocols
 
-protocol TaskDetailRouterInput: AnyObject {
-    func dismissModule()
-}
-
-// MARK: - Module Builder
-
-protocol TaskDetailModuleInput: AnyObject {
-    func configure(with task: Task?)
-}

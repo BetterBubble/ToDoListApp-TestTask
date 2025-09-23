@@ -49,13 +49,9 @@ final class TaskListPresenter {
 
     // MARK: - Public Methods for View
 
-    func getFormattedDate(for task: Task) -> String {
-        return dateFormatter.string(from: task.createdAt)
-    }
-
-    func getTask(at index: Int) -> Task? {
-        guard tasks.indices.contains(index) else { return nil }
-        return tasks[index]
+    func getFormattedDate(at index: Int) -> String {
+        guard tasks.indices.contains(index) else { return "" }
+        return dateFormatter.string(from: tasks[index].createdAt)
     }
 }
 
@@ -66,26 +62,23 @@ extension TaskListPresenter: TaskListViewOutput {
         interactor.fetchTasks()
     }
 
-    func didTapAddTask(with title: String) {
-        guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            view?.showError("Название задачи не может быть пустым")
-            return
-        }
-        interactor.createTask(with: title)
+    func didTapAddTask() {
+        router.navigateToTaskDetail(with: nil)
     }
 
     func didSelectTask(at index: Int) {
         guard tasks.indices.contains(index) else { return }
-        let task = tasks[index]
-        router.navigateToTaskDetail(with: task)
+        router.navigateToTaskDetail(with: tasks[index])
     }
 
     func didDeleteTask(at index: Int) {
-        interactor.deleteTask(at: index)
+        guard tasks.indices.contains(index) else { return }
+        interactor.deleteTask(with: tasks[index].id)
     }
 
     func didToggleTaskCompletion(at index: Int) {
-        interactor.toggleTaskCompletion(at: index)
+        guard tasks.indices.contains(index) else { return }
+        interactor.toggleTaskCompletion(for: tasks[index].id)
     }
 
     func didChangeSearchText(_ searchText: String) {
@@ -94,6 +87,16 @@ extension TaskListPresenter: TaskListViewOutput {
         } else {
             interactor.searchTasks(with: searchText)
         }
+    }
+
+    func didSelectEdit(at index: Int) {
+        guard tasks.indices.contains(index) else { return }
+        router.navigateToTaskDetail(with: tasks[index])
+    }
+
+    func didSelectShare(at index: Int) {
+        guard tasks.indices.contains(index) else { return }
+        router.shareTask(tasks[index])
     }
 }
 

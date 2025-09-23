@@ -11,7 +11,6 @@ final class TaskDetailPresenter {
 
     weak var view: TaskDetailViewInput?
     var interactor: TaskDetailInteractorInput?
-    var router: TaskDetailRouterInput?
 
     var task: Task?
 
@@ -27,7 +26,7 @@ final class TaskDetailPresenter {
 
     // MARK: - Private Methods
 
-    private func validateInput(title: String, description: String) -> Bool {
+    private func validateInput(title: String) -> Bool {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         return !trimmedTitle.isEmpty
     }
@@ -46,17 +45,17 @@ extension TaskDetailPresenter: TaskDetailViewOutput {
 
         // Отображаем существующую задачу или текущую дату для новой
         if let task = task {
-            view?.displayTask(task)
+            view?.displayTask(title: task.title, description: task.description)
             view?.displayDate(dateFormatter.string(from: task.createdAt))
         } else {
-            view?.displayTask(nil)
+            view?.displayTask(title: nil, description: nil)
             view?.displayDate(formatCurrentDate())
         }
     }
 
     func didTapSave(title: String, description: String) {
         // Валидация
-        guard validateInput(title: title, description: description) else {
+        guard validateInput(title: title) else {
             return
         }
 
@@ -66,20 +65,13 @@ extension TaskDetailPresenter: TaskDetailViewOutput {
 
         if let existingTask = task {
             // Редактирование существующей задачи
-            var updatedTask = existingTask
-            updatedTask.title = trimmedTitle
-            updatedTask.description = trimmedDescription.isEmpty ? nil : trimmedDescription
-
-            interactor?.updateTask(updatedTask, title: trimmedTitle, description: trimmedDescription)
+            interactor?.updateTask(existingTask, title: trimmedTitle, description: trimmedDescription)
         } else {
             // Создание новой задачи
             interactor?.createTask(title: trimmedTitle, description: trimmedDescription)
         }
     }
 
-    func didTapCancel() {
-        router?.dismissModule()
-    }
 }
 
 // MARK: - TaskDetailInteractorOutput

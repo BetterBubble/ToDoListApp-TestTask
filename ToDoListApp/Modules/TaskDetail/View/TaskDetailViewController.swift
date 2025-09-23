@@ -20,11 +20,9 @@ final class TaskDetailViewController: UIViewController {
     private let dateValueLabel = UILabel()
     private let descriptionTextView = UITextView()
 
-    private let activityIndicator = UIActivityIndicatorView(style: .large)
-
     // MARK: - Properties
 
-    private var currentTask: Task?
+    private var isEditMode = false
     private var hasUnsavedChanges = false
 
     // MARK: - Lifecycle
@@ -46,7 +44,7 @@ final class TaskDetailViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
 
-        navigationItem.title = currentTask == nil ? "Новая задача" : "Редактирование"
+        navigationItem.title = isEditMode ? "Редактирование" : "Новая задача"
 
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -75,9 +73,6 @@ final class TaskDetailViewController: UIViewController {
         descriptionTextView.text = descriptionPlaceholder
         descriptionTextView.textColor = .placeholderText
 
-        activityIndicator.hidesWhenStopped = true
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
 
@@ -85,8 +80,6 @@ final class TaskDetailViewController: UIViewController {
             $0.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview($0)
         }
-
-        view.addSubview(activityIndicator)
 
         setupKeyboardHandling()
     }
@@ -116,10 +109,7 @@ final class TaskDetailViewController: UIViewController {
             descriptionTextView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             descriptionTextView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             descriptionTextView.heightAnchor.constraint(greaterThanOrEqualToConstant: 100),
-            descriptionTextView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
-
-            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            descriptionTextView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20)
         ])
     }
 
@@ -232,33 +222,23 @@ extension TaskDetailViewController: TaskDetailViewInput {
         // Начальная настройка выполняется в viewDidLoad
     }
 
-    func displayTask(_ task: Task?) {
-        currentTask = task
-
-        if let task = task {
-            titleTextField.text = task.title
-            if let description = task.description, !description.isEmpty {
+    func displayTask(title: String?, description: String?) {
+        if let title = title {
+            isEditMode = true
+            titleTextField.text = title
+            if let description = description, !description.isEmpty {
                 descriptionTextView.text = description
                 descriptionTextView.textColor = .label
             }
             navigationItem.title = "Редактирование"
         } else {
+            isEditMode = false
             navigationItem.title = "Новая задача"
         }
     }
 
     func displayDate(_ dateString: String) {
         dateValueLabel.text = dateString
-    }
-
-    func showLoading() {
-        activityIndicator.startAnimating()
-        view.isUserInteractionEnabled = false
-    }
-
-    func hideLoading() {
-        activityIndicator.stopAnimating()
-        view.isUserInteractionEnabled = true
     }
 
     func showError(_ message: String) {
@@ -269,9 +249,5 @@ extension TaskDetailViewController: TaskDetailViewInput {
         )
         alert.addAction(UIAlertAction(title: "ОК", style: .default))
         present(alert, animated: true)
-    }
-
-    func dismissView() {
-        navigationController?.popViewController(animated: true)
     }
 }

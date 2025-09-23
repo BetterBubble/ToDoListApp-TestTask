@@ -7,10 +7,6 @@ import UIKit
 
 final class TaskDetailRouter {
 
-    // MARK: - Properties
-
-    weak var viewController: UIViewController?
-
     // MARK: - Module Assembly
 
     static func assembleModule(with task: Task? = nil) -> UIViewController {
@@ -21,7 +17,6 @@ final class TaskDetailRouter {
                 repository: CoreDataTaskRepository()
             )
         )
-        let router = TaskDetailRouter()
 
         // View -> Presenter
         view.output = presenter
@@ -29,24 +24,11 @@ final class TaskDetailRouter {
         // Presenter -> View
         presenter.view = view
         presenter.interactor = interactor
-        presenter.router = router
         presenter.task = task
 
         // Interactor -> Presenter
         interactor.output = presenter
 
-        // Router -> View
-        router.viewController = view
-
         return view
-    }
-}
-
-// MARK: - TaskDetailRouterInput
-
-extension TaskDetailRouter: TaskDetailRouterInput {
-
-    func dismissModule() {
-        viewController?.navigationController?.popViewController(animated: true)
     }
 }

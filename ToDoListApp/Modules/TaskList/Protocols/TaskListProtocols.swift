@@ -1,5 +1,5 @@
 
-import UIKit
+import Foundation
 
 // MARK: - View → Presenter
 protocol TaskListViewInput: AnyObject {
@@ -11,23 +11,23 @@ protocol TaskListViewInput: AnyObject {
 
 protocol TaskListViewOutput: AnyObject {
     func viewDidLoad()
-    func didTapAddTask(with title: String)
+    func didTapAddTask()
     func didSelectTask(at index: Int)
     func didDeleteTask(at index: Int)
     func didToggleTaskCompletion(at index: Int)
     func didChangeSearchText(_ searchText: String)
 
-    // Методы для получения данных для отображения
-    func getTask(at index: Int) -> Task?
-    func getFormattedDate(for task: Task) -> String
+    func didSelectEdit(at index: Int)
+    func didSelectShare(at index: Int)
+
+    func getFormattedDate(at index: Int) -> String
 }
 
 // MARK: - Presenter → Interactor
 protocol TaskListInteractorInput: AnyObject {
     func fetchTasks()
-    func createTask(with title: String)
-    func deleteTask(at index: Int)
-    func toggleTaskCompletion(at index: Int)
+    func deleteTask(with id: UUID)
+    func toggleTaskCompletion(for id: UUID)
     func searchTasks(with searchText: String)
 }
 
@@ -39,5 +39,6 @@ protocol TaskListInteractorOutput: AnyObject {
 
 // MARK: - Presenter → Router
 protocol TaskListRouterInput {
-    func navigateToTaskDetail(with task: Task)
+    func navigateToTaskDetail(with task: Task?)
+    func shareTask(_ task: Task)
 }

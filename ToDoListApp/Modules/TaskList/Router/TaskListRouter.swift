@@ -6,9 +6,32 @@ final class TaskListRouter {
 }
 
 extension TaskListRouter: TaskListRouterInput {
-    func navigateToTaskDetail(with task: Task) {
+    func navigateToTaskDetail(with task: Task?) {
         let taskDetailViewController = TaskDetailRouter.assembleModule(with: task)
         viewController?.navigationController?.pushViewController(taskDetailViewController, animated: true)
+    }
+
+    func shareTask(_ task: Task) {
+        guard let viewController = self.viewController else { return }
+
+        var textToShare = task.title
+
+        if let description = task.description, !description.isEmpty {
+            textToShare += "\n\n\(description)"
+        }
+
+        let activityViewController = UIActivityViewController(
+            activityItems: [textToShare],
+            applicationActivities: nil
+        )
+
+        if let popoverController = activityViewController.popoverPresentationController {
+            popoverController.sourceView = viewController.view
+            popoverController.sourceRect = CGRect(x: viewController.view.bounds.midX, y: viewController.view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
+        }
+
+        viewController.present(activityViewController, animated: true)
     }
 }
 
