@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "D47D42E2-8077-4DBC-A323-DBF4149701F6",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:ToDoListApp.xcodeproj",
+      "identifier" : "BE839E422E7F0B70008777F1",
+      "name" : "ToDoListApp"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:ToDoListApp.xcodeproj",
+        "identifier" : "BE839E582E7F0B72008777F1",
+        "name" : "ToDoListAppTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:ToDoListApp.xcodeproj",
+        "identifier" : "BE839E622E7F0B72008777F1",
+        "name" : "ToDoListAppUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

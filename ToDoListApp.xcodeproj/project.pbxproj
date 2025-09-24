@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BE5C55A02E82DCCE0011D380 /* ToDoListApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = ToDoListApp.xctestplan; sourceTree = "<group>"; };
 		BE839E432E7F0B70008777F1 /* ToDoListApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToDoListApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE839E592E7F0B72008777F1 /* ToDoListAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ToDoListAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE839E632E7F0B72008777F1 /* ToDoListAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ToDoListAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +89,7 @@
 		BE839E3A2E7F0B70008777F1 = {
 			isa = PBXGroup;
 			children = (
+				BE5C55A02E82DCCE0011D380 /* ToDoListApp.xctestplan */,
 				BE839E452E7F0B70008777F1 /* ToDoListApp */,
 				BE839E5C2E7F0B72008777F1 /* ToDoListAppTests */,
 				BE839E662E7F0B72008777F1 /* ToDoListAppUITests */,

@@ -85,43 +85,6 @@ final class CoreDataStack: CoreDataStackProtocol {
 
     // MARK: - Public Methods
 
-    /// Сбрасывает флаг первого запуска (для тестирования)
-    static func resetFirstLaunchFlag() {
-        UserDefaults.standard.removeObject(forKey: "HasLaunchedBefore")
-        UserDefaults.standard.synchronize()
-        print("Флаг первого запуска сброшен")
-    }
-
-    /// Удаляет все данные из Core Data (для тестирования)
-    static func deleteAllData() {
-        let storeURL = NSPersistentContainer.defaultDirectoryURL()
-            .appendingPathComponent("ToDoListModel.sqlite")
-
-        let storeSHMURL = storeURL.appendingPathExtension("shm")
-        let storeWALURL = storeURL.appendingPathExtension("wal")
-
-        let fileManager = FileManager.default
-
-        do {
-            if fileManager.fileExists(atPath: storeURL.path) {
-                try fileManager.removeItem(at: storeURL)
-                print("Основной файл базы данных удален")
-            }
-            if fileManager.fileExists(atPath: storeSHMURL.path) {
-                try fileManager.removeItem(at: storeSHMURL)
-            }
-            if fileManager.fileExists(atPath: storeWALURL.path) {
-                try fileManager.removeItem(at: storeWALURL)
-            }
-
-            // Сбрасываем флаг первого запуска
-            resetFirstLaunchFlag()
-
-        } catch {
-            print("Ошибка удаления базы данных: \(error)")
-        }
-    }
-
     /// Сохраняет контекст если есть изменения
     func save() throws {
         let context = viewContext
@@ -146,13 +109,6 @@ final class CoreDataStack: CoreDataStackProtocol {
     /// - Parameter block: Блок для выполнения в фоновом потоке
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         persistentContainer.performBackgroundTask(block)
-    }
-
-    // Создает новый фоновый контекст
-    func newBackgroundContext() -> NSManagedObjectContext {
-        let context = persistentContainer.newBackgroundContext()
-        context.automaticallyMergesChangesFromParent = true
-        return context
     }
 
     // MARK: - Private Methods

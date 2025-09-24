@@ -159,12 +159,33 @@ final class CoreDataTaskRepository: TaskRepositoryProtocol {
 
     func deleteAllTasks(completion: @escaping (Result<Void, Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
-            let request: NSFetchRequest<NSFetchRequestResult> = TaskEntity.fetchRequest()
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+            let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
 
             do {
-                try context.execute(deleteRequest)
-                try context.save()
+                // Проверяем, не является ли это in-memory store (для тестов)
+                let stores = context.persistentStoreCoordinator?.persistentStores ?? []
+                let isInMemory = stores.contains { $0.type == NSInMemoryStoreType }
+
+                if isInMemory {
+                    // Для in-memory store используем обычное удаление
+                    let entities = try context.fetch(request)
+                    for entity in entities {
+                        context.delete(entity)
+                    }
+                    try context.save()
+                } else {
+                    // Для production используем batch delete
+                    let deleteRequest = NSBatchDeleteRequest(fetchRequest: request as! NSFetchRequest<NSFetchRequestResult>)
+                    deleteRequest.resultType = .resultTypeObjectIDs
+
+                    let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
+                    if let objectIDs = result?.result as? [NSManagedObjectID] {
+                        NSManagedObjectContext.mergeChanges(
+                            fromRemoteContextSave: [NSDeletedObjectsKey: objectIDs],
+                            into: [self.coreDataStack.viewContext]
+                        )
+                    }
+                }
 
                 DispatchQueue.main.async {
                     completion(.success(()))
