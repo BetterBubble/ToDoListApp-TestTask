@@ -20,26 +20,3 @@ extension TaskEntity {
     @NSManaged public var remoteId: Int32
 }
 
-// MARK: - Конвертация в доменную модель
-extension TaskEntity {
-
-    /// Конвертирует Core Data entity в доменную модель Task
-    func toDomainModel() -> Task {
-        return Task(
-            id: id ?? UUID(),
-            title: title ?? "",
-            description: taskDescription,
-            isCompleted: isCompleted,
-            createdAt: createdAt ?? Date()
-        )
-    }
-
-    /// Обновляет entity из доменной модели
-    func update(from task: Task) {
-        self.id = task.id
-        self.title = task.title
-        self.taskDescription = task.description
-        self.isCompleted = task.isCompleted
-        self.createdAt = task.createdAt
-    }
-}

@@ -21,6 +21,15 @@ protocol TaskListViewOutput: AnyObject {
     func didSelectShare(at index: Int)
 
     func getFormattedDate(at index: Int) -> String
+    func getTasksCount() -> String
+    func getTask(at index: Int) -> Task?
+    func getNumberOfTasks() -> Int
+
+    // Cell logic methods
+    func getCellTitle(at index: Int) -> String?
+    func getCellDescription(at index: Int) -> String?
+    func isCellCompleted(at index: Int) -> Bool
+    func isCellDescriptionEmpty(at index: Int) -> Bool
 }
 
 // MARK: - Presenter → Interactor

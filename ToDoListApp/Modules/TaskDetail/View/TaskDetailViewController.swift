@@ -42,9 +42,12 @@ final class TaskDetailViewController: UIViewController {
     // MARK: - Setup UI
 
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = UIColor(named: "BackgroundPrimary")
 
         navigationItem.title = isEditMode ? "Редактирование" : "Новая задача"
+
+        // Настройка навигационной панели
+        setupNavigationBar()
 
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -56,13 +59,20 @@ final class TaskDetailViewController: UIViewController {
         titleTextField.returnKeyType = .next
         titleTextField.delegate = self
         titleTextField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
+        titleTextField.textColor = UIColor(named: "TextPrimary")
+        titleTextField.tintColor = UIColor(named: "AccentYellow")
+        titleTextField.attributedPlaceholder = NSAttributedString(
+            string: "Название",
+            attributes: [.foregroundColor: UIColor(named: "TextSecondary") ?? .gray]
+        )
 
         dateValueLabel.font = .systemFont(ofSize: 14)
-        dateValueLabel.textColor = .secondaryLabel
+        dateValueLabel.textColor = UIColor(named: "TextSecondary")
         dateValueLabel.textAlignment = .left
 
         descriptionTextView.font = .systemFont(ofSize: 16)
-        descriptionTextView.textColor = .label
+        descriptionTextView.textColor = UIColor(named: "TextPrimary")
+        descriptionTextView.tintColor = UIColor(named: "AccentYellow")
         descriptionTextView.backgroundColor = .clear
         descriptionTextView.textContainerInset = .zero
         descriptionTextView.textContainer.lineFragmentPadding = 0
@@ -71,7 +81,7 @@ final class TaskDetailViewController: UIViewController {
 
         let descriptionPlaceholder = "Описание"
         descriptionTextView.text = descriptionPlaceholder
-        descriptionTextView.textColor = .placeholderText
+        descriptionTextView.textColor = UIColor(named: "TextSecondary")
 
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
@@ -82,6 +92,27 @@ final class TaskDetailViewController: UIViewController {
         }
 
         setupKeyboardHandling()
+    }
+
+    private func setupNavigationBar() {
+        // Настройка навигационной панели в темном стиле
+        navigationController?.navigationBar.barStyle = .black
+        navigationController?.navigationBar.isTranslucent = false
+        navigationController?.navigationBar.barTintColor = UIColor(named: "BackgroundPrimary")
+        navigationController?.navigationBar.tintColor = UIColor(named: "AccentYellow")
+
+        // Настройка кнопки "Назад"
+        let backButton = UIBarButtonItem()
+        backButton.title = "Назад"
+        backButton.setTitleTextAttributes([
+            .foregroundColor: UIColor(named: "AccentYellow") ?? .systemYellow
+        ], for: .normal)
+        navigationController?.navigationBar.topItem?.backBarButtonItem = backButton
+
+        // Настройка заголовка
+        navigationController?.navigationBar.titleTextAttributes = [
+            .foregroundColor: UIColor(named: "TextPrimary") ?? .white
+        ]
     }
 
     private func setupConstraints() {
@@ -163,7 +194,7 @@ final class TaskDetailViewController: UIViewController {
 
     private func autoSaveIfNeeded() {
         let title = titleTextField.text ?? ""
-        let description = descriptionTextView.textColor == .placeholderText ? "" : descriptionTextView.text ?? ""
+        let description = descriptionTextView.textColor == UIColor(named: "TextSecondary") ? "" : descriptionTextView.text ?? ""
 
         guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
@@ -193,16 +224,16 @@ extension TaskDetailViewController: UITextFieldDelegate {
 
 extension TaskDetailViewController: UITextViewDelegate {
     func textViewDidBeginEditing(_ textView: UITextView) {
-        if textView.textColor == .placeholderText {
+        if textView.textColor == UIColor(named: "TextSecondary") {
             textView.text = ""
-            textView.textColor = .label
+            textView.textColor = UIColor(named: "TextPrimary")
         }
     }
 
     func textViewDidEndEditing(_ textView: UITextView) {
         if textView.text.isEmpty {
             textView.text = "Описание"
-            textView.textColor = .placeholderText
+            textView.textColor = UIColor(named: "TextSecondary")
         }
     }
 
@@ -228,7 +259,7 @@ extension TaskDetailViewController: TaskDetailViewInput {
             titleTextField.text = title
             if let description = description, !description.isEmpty {
                 descriptionTextView.text = description
-                descriptionTextView.textColor = .label
+                descriptionTextView.textColor = UIColor(named: "TextPrimary")
             }
             navigationItem.title = "Редактирование"
         } else {

@@ -14,7 +14,7 @@ final class MockCoreDataStack: CoreDataStackProtocol {
 
     lazy var persistentContainer: NSPersistentContainer = {
         // Получаем модель из основного бандла приложения
-        let bundle = Bundle(for: CoreDataStack.self)
+        let bundle = Bundle.main
         guard let modelURL = bundle.url(forResource: "ToDoListModel", withExtension: "momd") else {
             fatalError("Failed to find data model")
         }
@@ -34,6 +34,9 @@ final class MockCoreDataStack: CoreDataStackProtocol {
             }
         }
 
+        // Настройка контекста для тестов
+        container.viewContext.automaticallyMergesChangesFromParent = true
+
         return container
     }()
 
@@ -51,6 +54,12 @@ final class MockCoreDataStack: CoreDataStackProtocol {
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         performBackgroundTaskCalled = true
         lastBackgroundTask = block
-        persistentContainer.performBackgroundTask(block)
+        persistentContainer.performBackgroundTask { context in
+            block(context)
+            // Принудительное слияние изменений с main context
+            DispatchQueue.main.async { [weak self] in
+                self?.viewContext.refreshAllObjects()
+            }
+        }
     }
 }

@@ -53,6 +53,52 @@ final class TaskListPresenter {
         guard tasks.indices.contains(index) else { return "" }
         return dateFormatter.string(from: tasks[index].createdAt)
     }
+
+    func getTasksCount() -> String {
+        let count = tasks.count
+        let taskWord: String
+
+        if count == 1 {
+            taskWord = "задача"
+        } else if count < 5 && count > 0 {
+            taskWord = "задачи"
+        } else {
+            taskWord = "задач"
+        }
+
+        return "\(count) \(taskWord)"
+    }
+
+    func getTask(at index: Int) -> Task? {
+        guard tasks.indices.contains(index) else { return nil }
+        return tasks[index]
+    }
+
+    func getNumberOfTasks() -> Int {
+        return tasks.count
+    }
+
+    // MARK: - Cell Logic Data
+
+    func getCellTitle(at index: Int) -> String? {
+        guard tasks.indices.contains(index) else { return nil }
+        return tasks[index].title
+    }
+
+    func getCellDescription(at index: Int) -> String? {
+        guard tasks.indices.contains(index) else { return nil }
+        return tasks[index].description
+    }
+
+    func isCellCompleted(at index: Int) -> Bool {
+        guard tasks.indices.contains(index) else { return false }
+        return tasks[index].isCompleted
+    }
+
+    func isCellDescriptionEmpty(at index: Int) -> Bool {
+        guard tasks.indices.contains(index) else { return true }
+        return tasks[index].description?.isEmpty ?? true
+    }
 }
 
 // MARK: - TaskListViewOutput

@@ -100,8 +100,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation1, createExpectation2], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let fetchExpectation = self.expectation(description: "Fetch all tasks")
         var resultTasks: [Task]?
@@ -142,8 +140,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation1, createExpectation2], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let fetchExpectation = self.expectation(description: "Fetch all tasks")
         var resultTasks: [Task]?
@@ -171,8 +167,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let fetchExpectation = self.expectation(description: "Fetch task by ID")
         var resultTask: Task?
@@ -219,8 +213,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let updatedTask = Task(
             id: task.id,
@@ -275,8 +267,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let deleteExpectation = self.expectation(description: "Delete task")
 
@@ -316,8 +306,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation1, createExpectation2], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let searchExpectation = self.expectation(description: "Search tasks")
         var resultTasks: [Task]?
@@ -343,8 +331,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let searchExpectation = self.expectation(description: "Search tasks")
         var resultTasks: [Task]?
@@ -370,8 +356,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let searchExpectation = self.expectation(description: "Search tasks")
         var resultTasks: [Task]?
@@ -418,8 +402,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation1, createExpectation2], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let countExpectation = self.expectation(description: "Get tasks count")
         var count: Int?
@@ -483,8 +465,6 @@ final class CoreDataTaskRepositoryTests: XCTestCase {
 
         wait(for: [createExpectation1, createExpectation2], timeout: 5.0)
 
-        // Добавляем небольшую задержку для синхронизации контекстов
-        Thread.sleep(forTimeInterval: 0.5)
 
         let deleteExpectation = self.expectation(description: "Delete all tasks")
 

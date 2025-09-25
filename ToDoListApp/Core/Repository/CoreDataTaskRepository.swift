@@ -35,7 +35,7 @@ final class CoreDataTaskRepository: TaskRepositoryProtocol {
 
             do {
                 let entities = try context.fetch(request)
-                let tasks = entities.map { $0.toDomainModel() }
+                let tasks = entities.map { TaskEntityMapper.toDomain(from: $0) }
                 print("Загружено задач: \(tasks.count)")
 
                 DispatchQueue.main.async {
@@ -61,7 +61,7 @@ final class CoreDataTaskRepository: TaskRepositoryProtocol {
 
             do {
                 let entities = try context.fetch(request)
-                let task = entities.first?.toDomainModel()
+                let task = entities.first.map { TaskEntityMapper.toDomain(from: $0) }
 
                 DispatchQueue.main.async {
                     completion(.success(task))
@@ -78,24 +78,14 @@ final class CoreDataTaskRepository: TaskRepositoryProtocol {
         print("Создаем задачу: \(task.title)")
 
         coreDataStack.performBackgroundTask { context in
-            guard let entityDescription = NSEntityDescription.entity(
-                forEntityName: "TaskEntity",
-                in: context
-            ) else {
-                print("Не удалось найти entity TaskEntity")
-                DispatchQueue.main.async {
-                    completion(.failure(CoreDataError.entityNotFound))
-                }
-                return
-            }
-
-            let taskEntity = TaskEntity(entity: entityDescription, insertInto: context)
-            taskEntity.update(from: task)
+            _ = TaskEntityMapper.toEntity(from: task, in: context)
 
             do {
                 try context.save()
                 print("Задача сохранена в Core Data: \(task.title)")
                 DispatchQueue.main.async {
+                    // Принудительно обновляем view context для тестов
+                    self.coreDataStack.viewContext.refreshAllObjects()
                     completion(.success(task))
                 }
             } catch {
@@ -122,7 +112,7 @@ final class CoreDataTaskRepository: TaskRepositoryProtocol {
                     return
                 }
 
-                taskEntity.update(from: task)
+                TaskEntityMapper.updateEntity(taskEntity, from: task)
                 try context.save()
 
                 DispatchQueue.main.async {
@@ -214,7 +204,7 @@ final class CoreDataTaskRepository: TaskRepositoryProtocol {
 
             do {
                 let entities = try context.fetch(request)
-                let tasks = entities.map { $0.toDomainModel() }
+                let tasks = entities.map { TaskEntityMapper.toDomain(from: $0) }
 
                 DispatchQueue.main.async {
                     completion(.success(tasks))
@@ -251,27 +241,17 @@ final class CoreDataTaskRepository: TaskRepositoryProtocol {
         print("Сохраняем \(tasks.count) задач из API")
 
         coreDataStack.performBackgroundTask { context in
-            guard let entityDescription = NSEntityDescription.entity(
-                forEntityName: "TaskEntity",
-                in: context
-            ) else {
-                print("Не удалось найти entity TaskEntity")
-                DispatchQueue.main.async {
-                    completion(.failure(CoreDataError.entityNotFound))
-                }
-                return
-            }
-
             // Сохраняем каждую задачу
             tasks.forEach { task in
-                let taskEntity = TaskEntity(entity: entityDescription, insertInto: context)
-                taskEntity.update(from: task)
+                _ = TaskEntityMapper.toEntity(from: task, in: context)
             }
 
             do {
                 try context.save()
                 print("Успешно сохранено \(tasks.count) задач в Core Data")
                 DispatchQueue.main.async {
+                    // Принудительно обновляем view context для тестов
+                    self.coreDataStack.viewContext.refreshAllObjects()
                     completion(.success(()))
                 }
             } catch {
